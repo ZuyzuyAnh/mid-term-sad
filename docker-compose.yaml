@@ -1,0 +1,136 @@
+version: '3.8'
+
+services:
+  user_db:
+    image: postgres:14
+    container_name: ecommerce_user_db
+    environment:
+      POSTGRES_DB: user_service_db
+      POSTGRES_USER: user_service_user
+      POSTGRES_PASSWORD: user_service_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce_network
+
+  product_db:
+    image: postgres:14
+    container_name: ecommerce_product_db
+    environment:
+      POSTGRES_DB: product_service_db
+      POSTGRES_USER: product_service_user
+      POSTGRES_PASSWORD: product_service_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - product_db_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce_network
+
+  order_db:
+    image: postgres:14
+    container_name: ecommerce_order_db
+    environment:
+      POSTGRES_DB: order_service_db
+      POSTGRES_USER: order_service_user
+      POSTGRES_PASSWORD: order_service_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce_network
+
+  payment_db:
+    image: postgres:14
+    container_name: ecommerce_payment_db
+    environment:
+      POSTGRES_DB: payment_service_db
+      POSTGRES_USER: payment_service_user
+      POSTGRES_PASSWORD: payment_service_password
+    ports:
+      - "5435:5432"
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce_network
+
+  shipping_db:
+    image: postgres:14
+    container_name: ecommerce_shipping_db
+    environment:
+      POSTGRES_DB: shipping_service_db
+      POSTGRES_USER: shipping_service_user
+      POSTGRES_PASSWORD: shipping_service_password
+    ports:
+      - "5436:5432"
+    volumes:
+      - shipping_db_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce_network
+
+  recommendation_db:
+    image: mongo:6
+    container_name: ecommerce_recommendation_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: recommendation_service_user
+      MONGO_INITDB_ROOT_PASSWORD: recommendation_service_password
+      MONGO_INITDB_DATABASE: recommendation_service_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - recommendation_db_data:/data/db
+    networks:
+      - ecommerce_network
+
+  analytic_db:
+    image: mongo:6
+    container_name: ecommerce_analytic_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: analytic_service_user
+      MONGO_INITDB_ROOT_PASSWORD: analytic_service_password
+      MONGO_INITDB_DATABASE: analytic_service_db
+    ports:
+      - "27018:27017"
+    volumes:
+      - analytic_db_data:/data/db
+    networks:
+      - ecommerce_network
+
+  admin_db:
+    image: postgres:14
+    container_name: ecommerce_admin_db
+    environment:
+      POSTGRES_DB: admin_service_db
+      POSTGRES_USER: admin_service_user
+      POSTGRES_PASSWORD: admin_service_password
+    ports:
+      - "5437:5432"
+    volumes:
+      - admin_db_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce_network
+
+  redis:
+    image: redis:alpine
+    container_name: ecommerce_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ecommerce_network
+
+networks:
+  ecommerce_network:
+    driver: bridge
+
+volumes:
+  user_db_data:
+  product_db_data:
+  order_db_data:
+  payment_db_data:
+  shipping_db_data:
+  recommendation_db_data:
+  analytic_db_data:
+  admin_db_data:
