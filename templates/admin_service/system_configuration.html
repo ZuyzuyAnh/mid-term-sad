@@ -1,0 +1,98 @@
+<!-- templates/admin_service/system_configuration.html -->
+{% extends 'base.html' %}
+
+{% block title %}Cấu hình hệ thống | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin_service:dashboard' %}">Quản trị</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Cấu hình hệ thống</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Cấu hình hệ thống</h4>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="list-group shadow-sm">
+            <a href="{% url 'admin_service:general_settings' %}" class="list-group-item list-group-item-action active" aria-current="true">
+                <i class="fas fa-cog me-2"></i> Cài đặt chung
+            </a>
+            <a href="{% url 'admin_service:email_settings' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-envelope me-2"></i> Cài đặt email
+            </a>
+            <a href="{% url 'admin_service:payment_settings' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-credit-card me-2"></i> Cài đặt thanh toán
+            </a>
+            <a href="{% url 'admin_service:shipping_settings' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-truck me-2"></i> Cài đặt vận chuyển
+            </a>
+            <a href="{% url 'admin_service:security_management' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-shield-alt me-2"></i> Bảo mật
+            </a>
+            <a href="{% url 'admin_service:manage_permissions' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-users-cog me-2"></i> Phân quyền
+            </a>
+            <a href="{% url 'admin_service:ai_models' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-robot me-2"></i> Quản lý AI
+            </a>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <!-- General Settings -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Cài đặt chung</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'admin_service:general_settings' %}">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="site_name" class="form-label">Tên website</label>
+                        <input type="text" class="form-control" id="site_name" name="site_name" value="{{ form.site_name.value|default:'EShop' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="site_description" class="form-label">Mô tả website</label>
+                        <textarea class="form-control" id="site_description" name="site_description" rows="2">{{ form.site_description.value|default:'Nền tảng mua sắm trực tuyến hàng đầu Việt Nam' }}</textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="logo_url" class="form-label">URL Logo</label>
+                            <input type="url" class="form-control" id="logo_url" name="logo_url" value="{{ form.logo_url.value|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="favicon_url" class="form-label">URL Favicon</label>
+                            <input type="url" class="form-control" id="favicon_url" name="favicon_url" value="{{ form.favicon_url.value|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="contact_email" class="form-label">Email liên hệ</label>
+                            <input type="email" class="form-control" id="contact_email" name="contact_email" value="{{ form.contact_email.value|default:'support@eshop.vn' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="support_phone" class="form-label">Số điện thoại hỗ trợ</label>
+                            <input type="text" class="form-control" id="support_phone" name="support_phone" value="{{ form.support_phone.value|default:'1900-1234' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Lưu cài đặt
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

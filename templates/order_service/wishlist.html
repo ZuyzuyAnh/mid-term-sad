@@ -1,0 +1,131 @@
+<!-- templates/order_service/wishlist.html -->
+{% extends 'base.html' %}
+
+{% block title %}Danh sách yêu thích | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'user_service:profile' %}">Tài khoản</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Danh sách yêu thích</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 mb-4">
+        <div class="account-sidebar">
+            <h5 class="mb-3">Tài khoản của tôi</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:profile' %}">
+                        <i class="fas fa-user me-2"></i> Thông tin tài khoản
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order_service:order_list' %}">
+                        <i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:address_list' %}">
+                        <i class="fas fa-map-marker-alt me-2"></i> Sổ địa chỉ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'order_service:view_wishlist' %}">
+                        <i class="fas fa-heart me-2"></i> Danh sách yêu thích
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'payment_service:payment_methods' %}">
+                        <i class="fas fa-credit-card me-2"></i> Phương thức thanh toán
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Danh sách yêu thích</h5>
+                {% if wishlist_items %}
+                <form method="post" action="#" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc muốn xóa tất cả sản phẩm trong danh sách yêu thích?')">
+                        <i class="fas fa-trash-alt me-1"></i> Xóa tất cả
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if wishlist_items %}
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in wishlist_items %}
+                    <div class="col">
+                        <div class="card h-100 product-card">
+                            {% comment %}
+                            <!-- TODO: Get product data -->
+                            {% endcomment %}
+                            <!-- Placeholder Image -->
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fas fa-image fa-3x text-muted"></i>
+                            </div>
+
+                            <div class="card-body">
+                                <h5 class="card-title">Product Name</h5>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="text-warning">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <small class="text-muted ms-1">(24)</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 fw-bold">300,000₫</h6>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-top-0">
+                                <div class="d-flex gap-2">
+                                    <form method="post" action="{% url 'order_service:move_to_cart' item_id=item.id %}" class="flex-grow-1">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="remove_from_wishlist" value="true">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-shopping-cart me-1"></i> Thêm vào giỏ
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'order_service:remove_from_wishlist' item_id=item.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-heart fa-4x text-muted mb-3"></i>
+                    <h5>Danh sách yêu thích của bạn đang trống</h5>
+                    <p class="text-muted mb-4">Hãy thêm sản phẩm vào danh sách yêu thích để mua sau!</p>
+                    <a href="{% url 'product_service:product_list' %}" class="btn btn-primary">
+                        <i class="fas fa-shopping-bag me-1"></i> Tiếp tục mua sắm
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

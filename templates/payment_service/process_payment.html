@@ -1,0 +1,173 @@
+<!-- templates/payment_service/process_payment.html -->
+{% extends 'base.html' %}
+
+{% block title %}Thanh toán | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_service:view_cart' %}">Giỏ hàng</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_service:checkout' %}">Thanh toán</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Xử lý thanh toán</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Thanh toán đơn hàng #{{ order_data.id }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="alert-heading mb-1">Xác nhận thông tin thanh toán</h6>
+                            <p class="mb-0">Vui lòng kiểm tra thông tin và hoàn tất thanh toán để đặt hàng.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="mb-3">Thông tin đơn hàng</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Mã đơn hàng:</span>
+                                <span class="fw-bold">#{{ order_data.id }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Tổng tiền:</span>
+                                <span class="fw-bold">{{ order_data.total_amount|floatformat:0 }}₫</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="mb-3">Phương thức thanh toán</h6>
+
+                            {% if payment_methods %}
+                            <form id="paymentForm" method="post" class="mb-3">
+                                {% csrf_token %}
+                                <input type="hidden" name="order_id" value="{{ order_data.id }}">
+
+                                <select name="payment_method_id" class="form-select mb-3">
+                                    {% for method in payment_methods %}
+                                    <option value="{{ method.id }}">
+                                        {% if method.payment_type == 'credit_card' or method.payment_type == 'debit_card' %}
+                                            {{ method.get_payment_type_display }} - {{ method.provider }} (•••• {{ method.account_number|slice:"-4:" }})
+                                        {% elif method.payment_type == 'bank_transfer' %}
+                                            {{ method.get_payment_type_display }} - {{ method.provider }}
+                                        {% else %}
+                                            {{ method.get_payment_type_display }}
+                                        {% endif %}
+                                        {% if method.is_default %} (Mặc định){% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Chọn cổng thanh toán</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_gateway" id="direct" value="direct" checked>
+                                            <label class="form-check-label" for="direct">
+                                                Thanh toán trực tiếp
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_gateway" id="vnpay" value="vnpay">
+                                            <label class="form-check-label" for="vnpay">
+                                                VNPay
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_gateway" id="momo" value="momo">
+                                            <label class="form-check-label" for="momo">
+                                                MoMo
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_gateway" id="zalopay" value="zalopay">
+                                            <label class="form-check-label" for="zalopay">
+                                                ZaloPay
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" name="agree_terms" id="agree_terms" required>
+                                    <label class="form-check-label" for="agree_terms">
+                                        Tôi đồng ý với <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">điều khoản thanh toán</a>
+                                    </label>
+                                </div>
+                            </form>
+                            {% else %}
+                            <div class="alert alert-warning mb-0">
+                                <p class="mb-2">Bạn chưa có phương thức thanh toán nào.</p>
+                                <a href="{% url 'payment_service:add_payment_method' %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-1"></i> Thêm phương thức thanh toán
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'order_service:checkout' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Quay lại
+                    </a>
+                    {% if payment_methods %}
+                    <button type="submit" form="paymentForm" class="btn btn-primary">
+                        <i class="fas fa-lock me-1"></i> Thanh toán {{ order_data.total_amount|floatformat:0 }}₫
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Điều khoản thanh toán</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Khi tiến hành thanh toán, bạn đồng ý với các điều khoản sau:</p>
+                <ul>
+                    <li>Bạn xác nhận rằng bạn đã kiểm tra đơn hàng và thông tin thanh toán trước khi tiến hành giao dịch.</li>
+                    <li>Bạn xác nhận rằng thông tin thanh toán bạn cung cấp là chính xác và hợp lệ.</li>
+                    <li>Bạn hiểu rằng EShop sẽ không lưu trữ thông tin thẻ của bạn, mà sẽ sử dụng các cổng thanh toán an toàn để xử lý giao dịch.</li>
+                    <li>Bạn đồng ý với chính sách hoàn tiền và hủy đơn hàng của EShop.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Tôi đồng ý</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Automatically check terms when clicking "Agree" in modal
+    $(document).ready(function() {
+        $('#termsModal .btn-primary').click(function() {
+            $('#agree_terms').prop('checked', true);
+        });
+    });
+</script>
+{% endblock %}

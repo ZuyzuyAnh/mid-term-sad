@@ -1,0 +1,369 @@
+<!-- templates/order_service/checkout_payment.html -->
+{% extends 'base.html' %}
+
+{% block title %}Thanh toán | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_service:view_cart' %}">Giỏ hàng</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_service:checkout' %}">Thanh toán</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_service:checkout_shipping' %}">Địa chỉ & Vận chuyển</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Phương thức thanh toán</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Checkout Steps -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-0">
+                <div class="d-flex justify-content-between checkout-steps">
+                    <div class="step active flex-fill text-center p-3">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Giỏ hàng</div>
+                    </div>
+                    <div class="step active flex-fill text-center p-3">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Xác nhận đơn hàng</div>
+                    </div>
+                    <div class="step active flex-fill text-center p-3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Địa chỉ & Vận chuyển</div>
+                    </div>
+                    <div class="step active flex-fill text-center p-3">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Thanh toán</div>
+                    </div>
+                    <div class="step flex-fill text-center p-3">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Hoàn tất</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'order_service:checkout_complete' %}">
+            {% csrf_token %}
+
+            <!-- Payment Methods -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Phương thức thanh toán</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="paymentAccordion">
+                        <!-- Cash on Delivery -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingCOD">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCOD" aria-expanded="true" aria-controls="collapseCOD">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" checked>
+                                        <label class="form-check-label" for="cod">
+                                            <i class="fas fa-money-bill-wave me-2 text-success"></i> Thanh toán khi nhận hàng (COD)
+                                        </label>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapseCOD" class="accordion-collapse collapse show" aria-labelledby="headingCOD" data-bs-parent="#paymentAccordion">
+                                <div class="accordion-body">
+                                    <p class="text-muted mb-0">Bạn chỉ phải thanh toán khi nhận được hàng. Người giao hàng sẽ thu tiền mặt khi giao hàng cho bạn.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Credit/Debit Card -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingCard">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCard" aria-expanded="false" aria-controls="collapseCard">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="credit_card" value="credit_card">
+                                        <label class="form-check-label" for="credit_card">
+                                            <i class="fas fa-credit-card me-2 text-primary"></i> Thẻ tín dụng/Thẻ ghi nợ
+                                        </label>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapseCard" class="accordion-collapse collapse" aria-labelledby="headingCard" data-bs-parent="#paymentAccordion">
+                                <div class="accordion-body">
+                                    <div class="mb-3">
+                                        <label for="cardNumber" class="form-label">Số thẻ</label>
+                                        <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456">
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="expiry" class="form-label">Ngày hết hạn</label>
+                                            <input type="text" class="form-control" id="expiry" placeholder="MM/YY">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="cvv" class="form-label">CVV</label>
+                                            <input type="text" class="form-control" id="cvv" placeholder="123">
+                                        </div>
+                                    </div>
+                                    <div class="mb-0">
+                                        <label for="cardName" class="form-label">Tên chủ thẻ</label>
+                                        <input type="text" class="form-control" id="cardName" placeholder="NGUYEN VAN A">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Digital Wallet -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingWallet">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWallet" aria-expanded="false" aria-controls="collapseWallet">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="digital_wallet" value="digital_wallet">
+                                        <label class="form-check-label" for="digital_wallet">
+                                            <i class="fas fa-wallet me-2 text-danger"></i> Ví điện tử
+                                        </label>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapseWallet" class="accordion-collapse collapse" aria-labelledby="headingWallet" data-bs-parent="#paymentAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="wallet_type" id="momo" value="momo">
+                                                <label class="form-check-label" for="momo">
+                                                    <img src="https://via.placeholder.com/80x40" alt="MoMo" class="img-fluid">
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="wallet_type" id="zalopay" value="zalopay">
+                                                <label class="form-check-label" for="zalopay">
+                                                    <img src="https://via.placeholder.com/80x40" alt="ZaloPay" class="img-fluid">
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="wallet_type" id="vnpay" value="vnpay">
+                                                <label class="form-check-label" for="vnpay">
+                                                    <img src="https://via.placeholder.com/80x40" alt="VNPay" class="img-fluid">
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted mt-3 mb-0">Bạn sẽ được chuyển đến trang thanh toán an toàn của đối tác để hoàn tất thanh toán.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Transfer -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingBank">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBank" aria-expanded="false" aria-controls="collapseBank">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="bank_transfer" value="bank_transfer">
+                                        <label class="form-check-label" for="bank_transfer">
+                                            <i class="fas fa-university me-2 text-info"></i> Chuyển khoản ngân hàng
+                                        </label>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapseBank" class="accordion-collapse collapse" aria-labelledby="headingBank" data-bs-parent="#paymentAccordion">
+                                <div class="accordion-body">
+                                    <div class="alert alert-info">
+                                        <p class="mb-1"><strong>Thông tin chuyển khoản:</strong></p>
+                                        <p class="mb-1">Ngân hàng: Vietcombank</p>
+                                        <p class="mb-1">Số tài khoản: 1234567890</p>
+                                        <p class="mb-1">Tên người nhận: CÔNG TY TNHH ESHOP</p>
+                                        <p class="mb-0">Nội dung chuyển khoản: [Mã đơn hàng]</p>
+                                    </div>
+                                    <p class="text-muted mb-0">Đơn hàng của bạn sẽ được xử lý sau khi chúng tôi xác nhận thanh toán.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Notes -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Ghi chú đơn hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-0">
+                        <textarea class="form-control" name="notes" rows="3" placeholder="Nhập ghi chú đặc biệt cho đơn hàng của bạn (nếu có)"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'order_service:checkout_shipping' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Trở lại
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Hoàn tất đơn hàng <i class="fas fa-check ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Order Summary -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Tóm tắt đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tạm tính ({{ cart_items|length }} sản phẩm)</span>
+                    <span>{{ subtotal|floatformat:0 }}₫</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Phí vận chuyển</span>
+                    <span>30,000₫</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Thuế VAT (10%)</span>
+                    <span>{{ subtotal|multiply:0.1|floatformat:0 }}₫</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Giảm giá</span>
+                    <span>0₫</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-0 fw-bold">
+                    <span>Tổng cộng</span>
+                    <span>{{ subtotal|add:30000|add:subtotal|multiply:0.1|floatformat:0 }}₫</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Địa chỉ giao hàng</h5>
+                <a href="{% url 'order_service:checkout_shipping' %}" class="btn btn-sm btn-link p-0">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Nguyễn Văn A</strong></p>
+                <p class="mb-1">123 Đường ABC, Phường XYZ</p>
+                <p class="mb-1">Quận 1, TP. Hồ Chí Minh</p>
+                <p class="mb-0">Điện thoại: 0987654321</p>
+            </div>
+        </div>
+
+        <!-- Shipping Method -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Phương thức vận chuyển</h5>
+                <a href="{% url 'order_service:checkout_shipping' %}" class="btn btn-sm btn-link p-0">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Giao hàng tiêu chuẩn</strong></p>
+                <p class="mb-1">Phí vận chuyển: 30,000₫</p>
+                <p class="mb-0 text-muted">Thời gian giao hàng: 3-5 ngày</p>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Sản phẩm ({{ cart_items|length }})</h5>
+                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#orderItems">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            <div class="collapse" id="orderItems">
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="d-flex mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                        <div class="me-3" style="width: 50px; height: 50px;">
+                            <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                                <i class="fas fa-image text-muted"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fs-6">{{ item.product_name }}</h6>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted small">SL: {{ item.quantity }}</span>
+                                <span class="fw-bold">{{ item.subtotal|floatformat:0 }}₫</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-steps {
+        position: relative;
+    }
+
+    .checkout-steps::before {
+        content: "";
+        position: absolute;
+        top: 37px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #e9ecef;
+        z-index: 1;
+    }
+
+    .step {
+        position: relative;
+        z-index: 2;
+    }
+
+    .step-number {
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        margin: 0 auto 5px;
+        font-weight: bold;
+    }
+
+    .step-title {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .step.active .step-number {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .step.active .step-title {
+        color: var(--dark-color);
+        font-weight: 500;
+    }
+
+    .accordion-button::after {
+        margin-left: 0;
+        position: absolute;
+        right: 1rem;
+    }
+
+    .accordion-button {
+        padding-right: 3rem;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,44 @@
+<!-- templates/payment_service/payment_failed.html -->
+{% extends 'base.html' %}
+
+{% block title %}Thanh toán thất bại | EShop{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm text-center">
+            <div class="card-body py-5">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-danger text-white rounded-circle mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-exclamation-triangle fa-3x"></i>
+                    </div>
+                    <h2 class="mb-2">Thanh toán thất bại!</h2>
+                    <p class="text-muted">Đã xảy ra lỗi trong quá trình thanh toán</p>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="alert alert-danger">
+                            <p class="mb-0"><strong>Lỗi:</strong> {{ error }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'order_service:checkout_payment' %}" class="btn btn-primary">
+                        <i class="fas fa-redo me-1"></i> Thử lại
+                    </a>
+                    <a href="{% url 'order_service:view_cart' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-shopping-cart me-1"></i> Quay lại giỏ hàng
+                    </a>
+                </div>
+
+                <div class="mt-4">
+                    <p class="mb-0">Nếu bạn gặp vấn đề về thanh toán, vui lòng liên hệ với chúng tôi qua:</p>
+                    <p>Hotline: <a href="tel:+1900-1234">1900-1234</a> | Email: <a href="mailto:support@eshop.vn">support@eshop.vn</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

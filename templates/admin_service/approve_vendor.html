@@ -1,0 +1,145 @@
+<!-- templates/admin_service/approve_vendor.html -->
+{% extends 'base.html' %}
+
+{% block title %}Duyệt người bán | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin_service:dashboard' %}">Quản trị</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'admin_service:vendor_management' %}">Quản lý người bán</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'admin_service:pending_vendors' %}">Người bán chờ duyệt</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Duyệt người bán</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Duyệt đăng ký người bán</h5>
+                <a href="{% url 'admin_service:pending_vendors' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Quay lại
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-3 text-center">
+                        {% if vendor.profile_picture %}
+                        <img src="{{ vendor.profile_picture.url }}" alt="{{ vendor.username }}" class="img-fluid rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 100px; height: 100px;">
+                            <i class="fas fa-store fa-3x text-white"></i>
+                        </div>
+                        {% endif %}
+                        <h6>{{ vendor.username }}</h6>
+                        <p class="text-muted small mb-0">ID: {{ vendor.id }}</p>
+                    </div>
+                    <div class="col-md-9">
+                        <h6 class="border-bottom pb-2 mb-3">Thông tin cá nhân</h6>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">Họ và tên:</div>
+                            <div class="col-md-8">{{ vendor.full_name }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">Email:</div>
+                            <div class="col-md-8">{{ vendor.email }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">Số điện thoại:</div>
+                            <div class="col-md-8">{{ vendor.phone_number }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">Ngày tham gia:</div>
+                            <div class="col-md-8">{{ vendor.date_joined|date:"d/m/Y" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">Ngày đăng ký bán:</div>
+                            <div class="col-md-8">{{ vendor.registration_date|date:"d/m/Y H:i" }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="border-bottom pb-2 mb-3">Thông tin doanh nghiệp</h6>
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-bold">Tên doanh nghiệp:</div>
+                        <div class="col-md-9">{{ vendor.business_name }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-bold">Mã số thuế:</div>
+                        <div class="col-md-9">{{ vendor.tax_id }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-bold">Website:</div>
+                        <div class="col-md-9">{{ vendor.website|default:"Không có" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-bold">Mô tả:</div>
+                        <div class="col-md-9">{{ vendor.business_description }}</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="alert-heading mb-1">Thông tin quan trọng</h6>
+                            <p class="mb-0">Vui lòng xác minh tất cả thông tin trước khi phê duyệt đăng ký người bán. Sau khi được phê duyệt, người bán có thể đăng bán sản phẩm trên nền tảng.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <form method="post" action="{% url 'admin_service:approve_vendor' pk=vendor.id %}">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Ghi chú (tùy chọn)</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#declineVendorModal">
+                            <i class="fas fa-times me-1"></i> Từ chối
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-1"></i> Phê duyệt
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Decline Confirmation Modal -->
+<div class="modal fade" id="declineVendorModal" tabindex="-1" aria-labelledby="declineVendorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="declineVendorModalLabel">Từ chối đăng ký người bán</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'admin_service:decline_vendor' pk=vendor.id %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Bạn sắp từ chối đăng ký người bán của <strong>{{ vendor.username }}</strong>.</p>
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Lý do từ chối</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Từ chối</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

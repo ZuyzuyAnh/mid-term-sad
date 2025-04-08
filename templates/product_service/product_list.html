@@ -1,0 +1,212 @@
+<!-- templates/product_service/product_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Sản phẩm | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Sản phẩm</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Filters -->
+    <div class="col-md-3 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Bộ lọc</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{% url 'product_service:product_list' %}">
+                    <!-- Category Filter -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Danh mục</label>
+                        <select name="category" class="form-select">
+                            <option value="">Tất cả danh mục</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if current_category == category.id|stringformat:"i" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Price Range Filter -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Khoảng giá</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="number" class="form-control" name="min_price" placeholder="Từ" value="{{ min_price|default:'' }}">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" class="form-control" name="max_price" placeholder="Đến" value="{{ max_price|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sort Filter -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Sắp xếp theo</label>
+                        <select name="sort" class="form-select">
+                            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Mới nhất</option>
+                            <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Giá tăng dần</option>
+                            <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Giá giảm dần</option>
+                            <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Tên A-Z</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i> Lọc
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products -->
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Tất cả sản phẩm</h4>
+            <div class="text-muted">Hiển thị {{ page_obj.start_index }} - {{ page_obj.end_index }} trong tổng số {{ page_obj.paginator.count }} sản phẩm</div>
+        </div>
+
+        {% if page_obj %}
+        <div class="row row-cols-1 row-cols-md-3 g-3">
+            {% for product in page_obj %}
+            <div class="col">
+                <div class="card h-100 product-card">
+                    {% if product.discount_price %}
+                    <div class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 rounded-pill">
+                        -{{ product.discount_percentage }}%
+                    </div>
+                    {% endif %}
+
+                    <a href="{% url 'product_service:product_detail' pk=product.id %}">
+                        {% with product.images.all as images %}
+                            {% if images %}
+                                {% with images|first as image %}
+                                <img src="{{ image.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: contain;">
+                                {% endwith %}
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    </a>
+
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <a href="{% url 'product_service:product_detail' pk=product.id %}" class="text-decoration-none text-dark">
+                                {{ product.name }}
+                            </a>
+                        </h6>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <small class="text-muted ms-1">(24)</small>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                {% if product.discount_price %}
+                                <span class="fw-bold text-danger">{{ product.discount_price|floatformat:0 }}₫</span>
+                                <small class="text-muted text-decoration-line-through ms-1">{{ product.price|floatformat:0 }}₫</small>
+                                {% else %}
+                                <span class="fw-bold">{{ product.price|floatformat:0 }}₫</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-muted small">Đã bán 120</span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'order_service:add_to_cart' product_id=product.id %}" class="btn btn-sm btn-primary flex-grow-1">
+                                <i class="fas fa-shopping-cart me-1"></i> Thêm vào giỏ
+                            </a>
+                            <a href="{% url 'order_service:add_to_wishlist' product_id=product.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-heart"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i> Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

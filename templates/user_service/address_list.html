@@ -1,0 +1,111 @@
+<!-- templates/user_service/address_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Sổ địa chỉ | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'user_service:profile' %}">Tài khoản</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Sổ địa chỉ</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 mb-4">
+        <div class="account-sidebar">
+            <h5 class="mb-3">Tài khoản của tôi</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:profile' %}">
+                        <i class="fas fa-user me-2"></i> Thông tin tài khoản
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order_service:order_list' %}">
+                        <i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'user_service:address_list' %}">
+                        <i class="fas fa-map-marker-alt me-2"></i> Sổ địa chỉ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order_service:view_wishlist' %}">
+                        <i class="fas fa-heart me-2"></i> Danh sách yêu thích
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'payment_service:payment_methods' %}">
+                        <i class="fas fa-credit-card me-2"></i> Phương thức thanh toán
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Sổ địa chỉ</h5>
+                <a href="{% url 'user_service:add_address' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Thêm địa chỉ mới
+                </a>
+            </div>
+            <div class="card-body">
+                {% if addresses %}
+                <div class="row">
+                    {% for address in addresses %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 {% if address.is_default %}border-primary{% endif %}">
+                            <div class="card-body">
+                                {% if address.is_default %}
+                                <span class="badge bg-primary position-absolute top-0 end-0 mt-2 me-2">Mặc định</span>
+                                {% endif %}
+                                <h6 class="card-title">{{ address.address_type|title }}</h6>
+                                <p class="card-text mb-1">{{ address.street_address }}</p>
+                                <p class="card-text mb-1">{{ address.city }}, {{ address.state }}</p>
+                                <p class="card-text mb-1">{{ address.country }} {{ address.zip_code }}</p>
+                                {% if address.phone_number %}
+                                <p class="card-text mb-0"><strong>Điện thoại:</strong> {{ address.phone_number }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-white">
+                                <div class="btn-group w-100">
+                                    <a href="{% url 'user_service:update_address' pk=address.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit me-1"></i> Sửa
+                                    </a>
+                                    {% if not address.is_default %}
+                                    <a href="{% url 'user_service:set_default_address' pk=address.id %}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-check-circle me-1"></i> Đặt mặc định
+                                    </a>
+                                    <a href="{% url 'user_service:delete_address' pk=address.id %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash-alt me-1"></i> Xóa
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                    <p class="mb-3">Bạn chưa có địa chỉ nào.</p>
+                    <a href="{% url 'user_service:add_address' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i> Thêm địa chỉ mới
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

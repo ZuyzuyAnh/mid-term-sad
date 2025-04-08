@@ -1,0 +1,249 @@
+<!-- templates/order_service/cart.html -->
+{% extends 'base.html' %}
+
+{% block title %}Giỏ hàng | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Giỏ hàng</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Giỏ hàng của bạn</h5>
+                {% if cart_items %}
+                <a href="{% url 'order_service:clear_cart' %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc muốn xóa tất cả sản phẩm trong giỏ hàng?')">
+                    <i class="fas fa-trash-alt me-1"></i> Xóa tất cả
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if cart_items %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 50%">Sản phẩm</th>
+                                <th scope="col" class="text-center">Đơn giá</th>
+                                <th scope="col" class="text-center">Số lượng</th>
+                                <th scope="col" class="text-end">Thành tiền</th>
+                                <th scope="col" class="text-center"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3" style="width: 80px; height: 80px;">
+                                            {% comment %}
+                                            <!-- TODO: Get product image from product_id -->
+                                            <img src="{{ item.product_image_url }}" alt="{{ item.product_name }}" class="img-fluid" style="max-height: 80px; max-width: 80px;">
+                                            {% endcomment %}
+                                            <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                                                <i class="fas fa-image fa-2x text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">{{ item.product_name }}</h6>
+                                            {% if item.selected_attributes %}
+                                            <div class="small text-muted">
+                                                {% for key, value in item.selected_attributes.items %}
+                                                <span>{{ key }}: {{ value }}</span>{% if not forloop.last %}, {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">{{ item.price_at_time|floatformat:0 }}₫</td>
+                                <td class="text-center">
+                                    <form method="post" action="{% url 'order_service:update_cart_item' item_id=item.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <div class="input-group input-group-sm" style="width: 100px;">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity('quantity-{{ item.id }}', '{{ item.id }}')">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" id="quantity-{{ item.id }}" name="quantity" class="form-control text-center" value="{{ item.quantity }}" min="1" data-item-id="{{ item.id }}">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="incrementQuantity('quantity-{{ item.id }}', '{{ item.id }}')">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </td>
+                                <td class="text-end fw-bold">{{ item.subtotal|floatformat:0 }}₫</td>
+                                <td class="text-center">
+                                    <a href="{% url 'order_service:remove_from_cart' item_id=item.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+                    <h5>Giỏ hàng của bạn đang trống</h5>
+                    <p class="text-muted mb-4">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+                    <a href="{% url 'product_service:product_list' %}" class="btn btn-primary">
+                        <i class="fas fa-shopping-bag me-1"></i> Tiếp tục mua sắm
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Đề xuất sản phẩm -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Có thể bạn sẽ thích</h5>
+            </div>
+            <div class="card-body">
+                <div class="row row-cols-2 row-cols-md-4 g-3">
+                    <!-- TODO: Get recommended products -->
+                    {% for i in "1234" %}
+                    <div class="col">
+                        <div class="card h-100 product-card">
+                            <div class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 rounded-pill">
+                                -10%
+                            </div>
+                            <a href="#">
+                                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 120px;">
+                                    <i class="fas fa-image fa-2x text-muted"></i>
+                                </div>
+                            </a>
+                            <div class="card-body p-2">
+                                <h6 class="card-title small mb-1">Sản phẩm đề xuất {{ i }}</h6>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="fw-bold text-danger small">270,000₫</span>
+                                        <small class="text-muted text-decoration-line-through ms-1">300,000₫</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Tóm tắt đơn hàng -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Tóm tắt đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tạm tính</span>
+                    <span>{{ subtotal|floatformat:0 }}₫</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Phí vận chuyển</span>
+                    <span>---</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Giảm giá</span>
+                    <span>0₫</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-3 fw-bold">
+                    <span>Tổng cộng</span>
+                    <span>{{ subtotal|floatformat:0 }}₫</span>
+                </div>
+
+                {% if cart_items %}
+                <div class="d-grid">
+                    <a href="{% url 'order_service:checkout' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-check-circle me-1"></i> Tiến hành thanh toán
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-grid">
+                    <button class="btn btn-primary btn-lg" disabled>
+                        <i class="fas fa-check-circle me-1"></i> Tiến hành thanh toán
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Mã giảm giá -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Mã giảm giá</h5>
+            </div>
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Nhập mã giảm giá">
+                    <button class="btn btn-outline-primary" type="button">Áp dụng</button>
+                </div>
+                <div class="small text-muted">
+                    <i class="fas fa-info-circle me-1"></i> Mỗi đơn hàng chỉ áp dụng 1 mã giảm giá
+                </div>
+            </div>
+        </div>
+
+        <!-- Chính sách mua hàng -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-truck-moving text-primary fa-2x me-3"></i>
+                    <div>
+                        <h6 class="mb-1">Miễn phí vận chuyển</h6>
+                        <p class="small text-muted mb-0">Cho đơn hàng từ 500,000₫</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-undo-alt text-primary fa-2x me-3"></i>
+                    <div>
+                        <h6 class="mb-1">7 ngày đổi trả dễ dàng</h6>
+                        <p class="small text-muted mb-0">Theo chính sách đổi trả hàng</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-shield-alt text-primary fa-2x me-3"></i>
+                    <div>
+                        <h6 class="mb-1">Bảo đảm chất lượng 100%</h6>
+                        <p class="small text-muted mb-0">Sản phẩm chính hãng</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateCartItem(itemId, quantity) {
+        const form = document.querySelector(`form[action*="${itemId}"]`);
+        const input = form.querySelector('input[name="quantity"]');
+        input.value = quantity;
+        form.submit();
+    }
+
+    function incrementQuantity(inputId, itemId) {
+        const input = document.getElementById(inputId);
+        const quantity = parseInt(input.value) + 1;
+        updateCartItem(itemId, quantity);
+    }
+
+    function decrementQuantity(inputId, itemId) {
+        const input = document.getElementById(inputId);
+        const quantity = Math.max(1, parseInt(input.value) - 1);
+        updateCartItem(itemId, quantity);
+    }
+</script>
+{% endblock %}

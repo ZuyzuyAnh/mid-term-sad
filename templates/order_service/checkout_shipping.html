@@ -1,0 +1,293 @@
+<!-- templates/order_service/checkout_shipping.html -->
+{% extends 'base.html' %}
+
+{% block title %}Địa chỉ & Vận chuyển | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_service:view_cart' %}">Giỏ hàng</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_service:checkout' %}">Thanh toán</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Địa chỉ & Vận chuyển</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Checkout Steps -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-0">
+                <div class="d-flex justify-content-between checkout-steps">
+                    <div class="step active flex-fill text-center p-3">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Giỏ hàng</div>
+                    </div>
+                    <div class="step active flex-fill text-center p-3">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Xác nhận đơn hàng</div>
+                    </div>
+                    <div class="step active flex-fill text-center p-3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Địa chỉ & Vận chuyển</div>
+                    </div>
+                    <div class="step flex-fill text-center p-3">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Thanh toán</div>
+                    </div>
+                    <div class="step flex-fill text-center p-3">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Hoàn tất</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'order_service:checkout_payment' %}">
+            {% csrf_token %}
+
+            <!-- Shipping Address -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Địa chỉ giao hàng</h5>
+                    <a href="{% url 'user_service:add_address' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus me-1"></i> Thêm địa chỉ mới
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if addresses %}
+                    <div class="row">
+                        {% for address in addresses %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 {% if address.is_default %}border-primary{% endif %}">
+                                <div class="card-body">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="shipping_address_id" id="address_{{ address.id }}" value="{{ address.id }}" {% if address.is_default %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="address_{{ address.id }}">
+                                            {{ address.address_type|title }}
+                                            {% if address.is_default %}<span class="text-primary ms-2">(Mặc định)</span>{% endif %}
+                                        </label>
+                                    </div>
+                                    <p class="card-text mb-1 ms-4">{{ address.street_address }}</p>
+                                    <p class="card-text mb-1 ms-4">{{ address.city }}, {{ address.state }}</p>
+                                    <p class="card-text mb-1 ms-4">{{ address.country }} {{ address.zip_code }}</p>
+                                    {% if address.phone_number %}
+                                    <p class="card-text mb-0 ms-4"><strong>Điện thoại:</strong> {{ address.phone_number }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Bạn chưa có địa chỉ giao hàng. Vui lòng thêm địa chỉ mới để tiếp tục.
+                    </div>
+                    <div class="text-center">
+                        <a href="{% url 'user_service:add_address' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i> Thêm địa chỉ mới
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Shipping Method -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Phương thức vận chuyển</h5>
+                </div>
+                <div class="card-body">
+                    {% if shipping_methods %}
+                    <div class="row">
+                        {% for method in shipping_methods %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="shipping_method" id="shipping_{{ method.id }}" value="{{ method.id }}" {% if forloop.first %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="shipping_{{ method.id }}">
+                                            {{ method.name }}
+                                        </label>
+                                    </div>
+                                    <div class="ms-4">
+                                        <p class="card-text mb-1">{{ method.price|floatformat:0 }}₫</p>
+                                        <p class="card-text mb-0 text-muted small">Thời gian giao hàng: {{ method.estimated_days_min }}-{{ method.estimated_days_max }} ngày</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <!-- Fake shipping methods -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="shipping_method" id="shipping_standard" value="standard" checked>
+                                        <label class="form-check-label fw-bold" for="shipping_standard">
+                                            Giao hàng tiêu chuẩn
+                                        </label>
+                                    </div>
+                                    <div class="ms-4">
+                                        <p class="card-text mb-1">30,000₫</p>
+                                        <p class="card-text mb-0 text-muted small">Thời gian giao hàng: 3-5 ngày</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="shipping_method" id="shipping_express" value="express">
+                                        <label class="form-check-label fw-bold" for="shipping_express">
+                                            Giao hàng nhanh
+                                        </label>
+                                    </div>
+                                    <div class="ms-4">
+                                        <p class="card-text mb-1">50,000₫</p>
+                                        <p class="card-text mb-0 text-muted small">Thời gian giao hàng: 1-2 ngày</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'order_service:checkout' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Trở lại
+                        </a>
+                        <button type="submit" class="btn btn-primary" {% if not addresses %}disabled{% endif %}>
+                            Tiếp tục <i class="fas fa-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Order Summary -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Tóm tắt đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tạm tính ({{ cart_items|length }} sản phẩm)</span>
+                    <span>{{ subtotal|floatformat:0 }}₫</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Phí vận chuyển</span>
+                    <span>30,000₫</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Thuế VAT (10%)</span>
+                    <span>{{ subtotal|multiply:0.1|floatformat:0 }}₫</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Giảm giá</span>
+                    <span>0₫</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-0 fw-bold">
+                    <span>Tổng cộng</span>
+                    <span>{{ subtotal|add:30000|add:subtotal|multiply:0.1|floatformat:0 }}₫</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Sản phẩm ({{ cart_items|length }})</h5>
+                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#orderItems">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            <div class="collapse" id="orderItems">
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="d-flex mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                        <div class="me-3" style="width: 50px; height: 50px;">
+                            <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                                <i class="fas fa-image text-muted"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fs-6">{{ item.product_name }}</h6>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted small">SL: {{ item.quantity }}</span>
+                                <span class="fw-bold">{{ item.subtotal|floatformat:0 }}₫</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-steps {
+        position: relative;
+    }
+
+    .checkout-steps::before {
+        content: "";
+        position: absolute;
+        top: 37px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #e9ecef;
+        z-index: 1;
+    }
+
+    .step {
+        position: relative;
+        z-index: 2;
+    }
+
+    .step-number {
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        margin: 0 auto 5px;
+        font-weight: bold;
+    }
+
+    .step-title {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .step.active .step-number {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .step.active .step-title {
+        color: var(--dark-color);
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

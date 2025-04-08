@@ -1,0 +1,195 @@
+<!-- templates/admin_service/pending_vendors.html -->
+{% extends 'base.html' %}
+
+{% block title %}Duyệt người bán | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin_service:dashboard' %}">Quản trị</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'admin_service:vendor_management' %}">Quản lý người bán</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Người bán chờ duyệt</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Người bán chờ duyệt</h4>
+    <a href="{% url 'admin_service:vendor_management' %}" class="btn btn-outline-primary">
+        <i class="fas fa-store me-1"></i> Tất cả người bán
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <form action="{% url 'admin_service:pending_vendors' %}" method="get">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm người bán..." name="q" value="{{ query|default:'' }}">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="dateFilter" onchange="this.form.submit()">
+                    <option value="">Thời gian đăng ký</option>
+                    <option value="today">Hôm nay</option>
+                    <option value="yesterday">Hôm qua</option>
+                    <option value="last_week">Tuần trước</option>
+                    <option value="last_month">Tháng trước</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên người bán</th>
+                    <th>Thông tin doanh nghiệp</th>
+                    <th>Ngày đăng ký</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vendor in page_obj %}
+                <tr>
+                    <td>{{ vendor.id }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                {% if vendor.profile_picture %}
+                                <img src="{{ vendor.profile_picture.url }}" class="rounded-circle" width="40" height="40" alt="{{ vendor.username }}">
+                                {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-store text-white"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ vendor.username }}</h6>
+                                <small class="text-muted">{{ vendor.email }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="mb-1"><strong>Tên công ty:</strong> {{ vendor.business_name }}</div>
+                        <div class="mb-1"><strong>MST:</strong> {{ vendor.tax_id }}</div>
+                        <div><strong>SĐT:</strong> {{ vendor.phone_number }}</div>
+                    </td>
+                    <td>{{ vendor.registration_date|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'admin_service:approve_vendor' pk=vendor.id %}" class="btn btn-sm btn-success">
+                                <i class="fas fa-check me-1"></i> Duyệt
+                            </a>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#declineVendorModal{{ vendor.id }}">
+                                <i class="fas fa-times me-1"></i> Từ chối
+                            </button>
+                        </div>
+
+                        <!-- Decline Confirmation Modal -->
+                        <div class="modal fade" id="declineVendorModal{{ vendor.id }}" tabindex="-1" aria-labelledby="declineVendorModalLabel{{ vendor.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="declineVendorModalLabel{{ vendor.id }}">Từ chối đăng ký người bán</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form action="{% url 'admin_service:decline_vendor' pk=vendor.id %}" method="post">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p>Bạn sắp từ chối đăng ký người bán của <strong>{{ vendor.username }}</strong>.</p>
+                                            <div class="mb-3">
+                                                <label for="reason" class="form-label">Lý do từ chối</label>
+                                                <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                            <button type="submit" class="btn btn-danger">Từ chối</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4">
+                        <i class="fas fa-store fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">Không có người bán nào đang chờ duyệt</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

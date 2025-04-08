@@ -1,0 +1,186 @@
+<!-- templates/shipping_service/shipment_details.html -->
+{% extends 'base.html' %}
+
+{% block title %}Chi tiết vận chuyển | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'user_service:profile' %}">Tài khoản</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_service:order_detail' pk=shipment.order_id %}">Đơn hàng #{{ shipment.order_id }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Chi tiết vận chuyển</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Chi tiết vận chuyển</h5>
+                <a href="{% url 'order_service:order_detail' pk=shipment.order_id %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Trở lại đơn hàng
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="mb-3">Thông tin vận chuyển</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Mã vận đơn:</span>
+                                <span class="fw-bold">{{ shipment.tracking_number }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Đơn vị vận chuyển:</span>
+                                <span>{{ shipment.carrier }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Phương thức vận chuyển:</span>
+                                <span>{{ shipment.shipping_method }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Ngày gửi:</span>
+                                <span>{{ shipment.created_at|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Dự kiến giao hàng:</span>
+                                <span>{{ shipment.estimated_delivery|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Trạng thái:</span>
+                                <span>
+                                    {% if shipment.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                    {% elif shipment.status == 'processing' %}
+                                    <span class="badge bg-info text-dark">Đang xử lý</span>
+                                    {% elif shipment.status == 'shipped' %}
+                                    <span class="badge bg-primary">Đã gửi hàng</span>
+                                    {% elif shipment.status == 'in_transit' %}
+                                    <span class="badge bg-primary">Đang vận chuyển</span>
+                                    {% elif shipment.status == 'delivered' %}
+                                    <span class="badge bg-success">Đã giao hàng</span>
+                                    {% elif shipment.status == 'failed' %}
+                                    <span class="badge bg-danger">Giao hàng thất bại</span>
+                                    {% elif shipment.status == 'returned' %}
+                                    <span class="badge bg-secondary">Đã hoàn trả</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="mb-3">Địa chỉ giao hàng</h6>
+                            <p class="mb-1"><strong>{{ shipment.shipping_address.recipient_name }}</strong></p>
+                            <p class="mb-1">{{ shipment.shipping_address.street_address }}</p>
+                            <p class="mb-1">{{ shipment.shipping_address.city }}, {{ shipment.shipping_address.state }}</p>
+                            <p class="mb-1">{{ shipment.shipping_address.country }} {{ shipment.shipping_address.zip_code }}</p>
+                            <p class="mb-1">Điện thoại: {{ shipment.shipping_address.phone_number }}</p>
+                            {% if shipment.shipping_address.delivery_instructions %}
+                            <p class="mb-0"><strong>Ghi chú:</strong> {{ shipment.shipping_address.delivery_instructions }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="mb-3">Lịch trình vận chuyển</h6>
+                    <div class="timeline">
+                        {% for info in tracking_info %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker {% if forloop.first %}active{% endif %}"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="fw-bold mb-0">{{ info.status }}</h6>
+                                    <span class="text-muted small">{{ info.timestamp|date:"d/m/Y H:i" }}</span>
+                                </div>
+                                <p class="mb-1">{{ info.location }}</p>
+                                {% if info.description %}
+                                <p class="text-muted small mb-0">{{ info.description }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if not tracking_info %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">Chưa có thông tin cập nhật cho đơn hàng này.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Map Placeholder -->
+                <div class="mb-4">
+                    <h6 class="mb-3">Bản đồ theo dõi</h6>
+                    <div class="border rounded" style="height: 300px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                        <div class="text-center">
+                            <i class="fas fa-map-marked-alt fa-3x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">Bản đồ theo dõi đơn hàng sẽ hiển thị ở đây</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="alert-heading mb-1">Lưu ý về việc nhận hàng</h6>
+                            <p class="mb-0">Vui lòng kiểm tra tình trạng sản phẩm khi nhận hàng. Nếu có bất kỳ vấn đề gì, hãy liên hệ với chúng tôi trong vòng 48 giờ sau khi nhận hàng.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline:before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #e9ecef;
+        background-color: white;
+        left: -30px;
+        top: 0;
+    }
+
+    .timeline-marker.active {
+        border-color: var(--primary-color);
+        background-color: var(--primary-color);
+    }
+
+    .timeline-content {
+        padding-bottom: 20px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,245 @@
+<!-- templates/admin_service/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Quản trị hệ thống | EShop{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Bảng điều khiển quản trị</h4>
+    <div>
+        <a href="{% url 'admin_service:system_health' %}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-heartbeat me-1"></i> Kiểm tra hệ thống
+        </a>
+        <a href="{% url 'admin_service:create_backup' %}" class="btn btn-outline-info">
+            <i class="fas fa-database me-1"></i> Sao lưu dữ liệu
+        </a>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Tổng người dùng</h6>
+                        <h3 class="mt-3 mb-0">{{ user_count|default:"0" }}</h3>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-users fa-2x text-primary"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-success">
+                    <i class="fas fa-arrow-up me-1"></i> 12.5% so với tháng trước
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0">
+                <a href="{% url 'admin_service:user_management' %}" class="text-decoration-none d-flex justify-content-between align-items-center">
+                    <span>Xem chi tiết</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Đơn hàng hôm nay</h6>
+                        <h3 class="mt-3 mb-0">{{ order_count|default:"0" }}</h3>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-shopping-cart fa-2x text-success"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-success">
+                    <i class="fas fa-arrow-up me-1"></i> 8.2% so với hôm qua
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0">
+                <a href="#" class="text-decoration-none d-flex justify-content-between align-items-center">
+                    <span>Xem chi tiết</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Doanh thu tháng</h6>
+                        <h3 class="mt-3 mb-0">{{ total_revenue|default:"0"|floatformat:0 }}₫</h3>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-dollar-sign fa-2x text-info"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-danger">
+                    <i class="fas fa-arrow-down me-1"></i> 2.4% so với tháng trước
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0">
+                <a href="#" class="text-decoration-none d-flex justify-content-between align-items-center">
+                    <span>Xem chi tiết</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Vendor chờ duyệt</h6>
+                        <h3 class="mt-3 mb-0">5</h3>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-store fa-2x text-warning"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-muted">
+                    <i class="fas fa-clock me-1"></i> Cần duyệt trong 24h
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0">
+                <a href="{% url 'admin_service:pending_vendors' %}" class="text-decoration-none d-flex justify-content-between align-items-center">
+                    <span>Xem chi tiết</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Thống kê doanh thu</h5>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="revenueDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Tháng này
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="revenueDropdown">
+                        <li><a class="dropdown-item" href="#">Tháng này</a></li>
+                        <li><a class="dropdown-item" href="#">Quý này</a></li>
+                        <li><a class="dropdown-item" href="#">Năm nay</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <!-- Placeholder for chart -->
+                    <div class="d-flex justify-content-center align-items-center h-100 border rounded">
+                        <div class="text-center">
+                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Biểu đồ doanh thu theo thời gian</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Phân bổ đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <!-- Placeholder for chart -->
+                    <div class="d-flex justify-content-center align-items-center h-100 border rounded">
+                        <div class="text-center">
+                            <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Biểu đồ phân bổ trạng thái đơn hàng</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Đơn hàng gần đây</h5>
+                <a href="#" class="btn btn-sm btn-outline-primary">Tất cả đơn hàng</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn hàng</th>
+                            <th>Khách hàng</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in "12345"|make_list %}
+                        <tr>
+                            <td><a href="#" class="text-decoration-none fw-bold">#ORD2025040800{{ i }}</a></td>
+                            <td>Khách hàng {{ i }}</td>
+                            <td>{{ i }}00,000₫</td>
+                            <td>
+                                {% if i == '1' %}
+                                <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                {% elif i == '2' %}
+                                <span class="badge bg-info text-dark">Đang xử lý</span>
+                                {% elif i == '3' %}
+                                <span class="badge bg-primary">Đang giao</span>
+                                {% elif i == '4' %}
+                                <span class="badge bg-success">Đã giao</span>
+                                {% else %}
+                                <span class="badge bg-danger">Đã hủy</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Nhật ký hoạt động</h5>
+                <a href="{% url 'admin_service:audit_logs' %}" class="btn btn-sm btn-outline-primary">Xem tất cả</a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for log in recent_logs %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ log.action }}</h6>
+                            <p class="text-muted mb-0 small">
+                                Bởi User {{ log.user_id }} | Service: {{ log.service_name }}
+                            </p>
+                        </div>
+                        <small class="text-muted">{{ log.timestamp|date:"d/m/Y H:i" }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="list-group-item text-center py-4">
+                    <i class="fas fa-history fa-2x text-muted mb-3"></i>
+                    <p class="text-muted mb-0">Chưa có hoạt động nào được ghi nhận</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

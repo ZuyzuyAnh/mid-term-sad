@@ -1,0 +1,103 @@
+<!-- templates/shipping_service/shipping_methods.html -->
+{% extends 'base.html' %}
+
+{% block title %}Phương thức vận chuyển | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Phương thức vận chuyển</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Phương thức vận chuyển</h5>
+            </div>
+            <div class="card-body">
+                {% if methods %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Phương thức</th>
+                                <th>Mô tả</th>
+                                <th>Phí vận chuyển</th>
+                                <th>Thời gian giao hàng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for method in methods %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if method.name == 'Giao hàng tiêu chuẩn' %}
+                                        <i class="fas fa-truck text-primary fa-2x me-3"></i>
+                                        {% elif method.name == 'Giao hàng nhanh' %}
+                                        <i class="fas fa-shipping-fast text-danger fa-2x me-3"></i>
+                                        {% elif method.name == 'Tiết kiệm' %}
+                                        <i class="fas fa-truck-loading text-success fa-2x me-3"></i>
+                                        {% else %}
+                                        <i class="fas fa-box text-info fa-2x me-3"></i>
+                                        {% endif %}
+                                        <span>{{ method.name }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ method.description }}</td>
+                                <td>{{ method.price|floatformat:0 }}₫</td>
+                                <td>{{ method.estimated_days_min }} - {{ method.estimated_days_max }} ngày</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Lưu ý: Phí vận chuyển có thể thay đổi tùy theo địa chỉ giao hàng và khối lượng đơn hàng.
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Hiện không có phương thức vận chuyển nào khả dụng.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Chính sách vận chuyển</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6><i class="fas fa-truck-moving me-2 text-primary"></i> Miễn phí vận chuyển</h6>
+                    <p>Đơn hàng từ 500,000₫ sẽ được miễn phí vận chuyển tiêu chuẩn trong phạm vi 20km.</p>
+                </div>
+                <div class="mb-4">
+                    <h6><i class="fas fa-map-marker-alt me-2 text-primary"></i> Khu vực giao hàng</h6>
+                    <p>Chúng tôi giao hàng đến tất cả các tỉnh thành trên toàn quốc. Thời gian giao hàng có thể khác nhau tùy theo khu vực.</p>
+                </div>
+                <div class="mb-4">
+                    <h6><i class="fas fa-clock me-2 text-primary"></i> Thời gian giao hàng</h6>
+                    <p>Thời gian giao hàng được tính từ khi đơn hàng được xác nhận:</p>
+                    <ul>
+                        <li>Nội thành Hà Nội và TP. Hồ Chí Minh: 1-3 ngày</li>
+                        <li>Các tỉnh thành khác: 3-7 ngày</li>
+                        <li>Khu vực miền núi, hải đảo: 7-14 ngày</li>
+                    </ul>
+                </div>
+                <div>
+                    <h6><i class="fas fa-shield-alt me-2 text-primary"></i> Đảm bảo an toàn</h6>
+                    <p>Tất cả đơn hàng đều được đóng gói cẩn thận và có bảo hiểm trong quá trình vận chuyển.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

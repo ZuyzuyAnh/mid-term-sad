@@ -1,0 +1,124 @@
+<!-- templates/shipping_service/vendor/shipping_settings.html -->
+{% extends 'base.html' %}
+
+{% block title %}Cài đặt vận chuyển | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'user_service:vendor_profile' %}">Quản lý cửa hàng</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Cài đặt vận chuyển</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 mb-4">
+        <div class="account-sidebar">
+            <h5 class="mb-3">Quản lý cửa hàng</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:vendor_profile' %}">
+                        <i class="fas fa-store me-2"></i> Thông tin cửa hàng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'product_service:vendor_products' %}">
+                        <i class="fas fa-box me-2"></i> Sản phẩm
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order_service:vendor_orders' %}">
+                        <i class="fas fa-shopping-bag me-2"></i> Đơn hàng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'product_service:inventory_list' %}">
+                        <i class="fas fa-warehouse me-2"></i> Kho hàng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'shipping_service:vendor_shipping_settings' %}">
+                        <i class="fas fa-truck me-2"></i> Cài đặt vận chuyển
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'payment_service:vendor_earnings' %}">
+                        <i class="fas fa-money-bill-wave me-2"></i> Doanh thu
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Cài đặt vận chuyển</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label for="processing_time_days" class="form-label fw-bold">Thời gian xử lý đơn hàng</label>
+                        <div class="input-group" style="max-width: 200px;">
+                            <input type="number" class="form-control" id="processing_time_days" name="processing_time_days" min="1" max="10" value="{{ settings.processing_time_days }}">
+                            <span class="input-group-text">ngày</span>
+                        </div>
+                        <div class="form-text">Thời gian bạn cần để chuẩn bị và gửi đơn hàng sau khi nhận được.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="free_shipping_threshold" class="form-label fw-bold">Ngưỡng miễn phí vận chuyển</label>
+                        <div class="input-group" style="max-width: 250px;">
+                            <input type="number" class="form-control" id="free_shipping_threshold" name="free_shipping_threshold" min="0" step="1000" value="{{ settings.free_shipping_threshold|default:0 }}">
+                            <span class="input-group-text">₫</span>
+                        </div>
+                        <div class="form-text">Đơn hàng có giá trị từ mức này trở lên sẽ được miễn phí vận chuyển. Để 0 nếu không áp dụng.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Phương thức vận chuyển khả dụng</label>
+                        <div class="row">
+                            {% for method in available_methods %}
+                            <div class="col-md-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="available_shipping_methods" id="method_{{ method.id }}" value="{{ method.id }}" {% if method in settings.available_shipping_methods.all %}checked{% endif %}>
+                                    <label class="form-check-label" for="method_{{ method.id }}">
+                                        {{ method.name }} ({{ method.price|floatformat:0 }}₫, {{ method.estimated_days_min }}-{{ method.estimated_days_max }} ngày)
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="form-text">Chọn phương thức vận chuyển mà bạn muốn cung cấp cho khách hàng.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="shipping_policy" class="form-label fw-bold">Chính sách vận chuyển</label>
+                        <textarea class="form-control" id="shipping_policy" name="shipping_policy" rows="4">{{ settings.shipping_policy }}</textarea>
+                        <div class="form-text">Mô tả chi tiết về chính sách vận chuyển của bạn.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="return_policy" class="form-label fw-bold">Chính sách đổi trả</label>
+                        <textarea class="form-control" id="return_policy" name="return_policy" rows="4">{{ settings.return_policy }}</textarea>
+                        <div class="form-text">Mô tả chi tiết về chính sách đổi trả của bạn.</div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Lưu cài đặt
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

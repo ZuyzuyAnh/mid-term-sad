@@ -1,0 +1,102 @@
+<!-- templates/user_service/vendor_register.html -->
+{% extends 'base.html' %}
+
+{% block title %}Đăng ký bán hàng | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'user_service:profile' %}">Tài khoản</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Đăng ký bán hàng</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Đăng ký trở thành người bán</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Để trở thành người bán trên EShop, vui lòng cung cấp thông tin chính xác. Yêu cầu của bạn sẽ được xem xét trong vòng 1-3 ngày làm việc.
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                            <div class="form-check">
+                                {{ field|add_class:"form-check-input" }}
+                                <label class="form-check-label" for="{{ field.id_for_label }}">
+                                    Tôi đồng ý với <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Điều khoản dành cho người bán</a>
+                                </label>
+                            </div>
+                        {% else %}
+                            {{ field|add_class:"form-control" }}
+                        {% endif %}
+
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in field.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-store me-1"></i> Đăng ký bán hàng
+                        </button>
+                        <a href="{% url 'user_service:profile' %}" class="btn btn-outline-secondary ms-2">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Điều khoản dành cho người bán</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5>1. Quy định chung</h5>
+                <p>Khi đăng ký trở thành người bán trên EShop, bạn đồng ý tuân thủ các quy định và chính sách của chúng tôi.</p>
+
+                <h5>2. Phí và thanh toán</h5>
+                <p>EShop sẽ thu phí hoa hồng 5% trên mỗi đơn hàng thành công. Thanh toán cho người bán sẽ được thực hiện 2 lần/tháng.</p>
+
+                <h5>3. Trách nhiệm của người bán</h5>
+                <p>Người bán có trách nhiệm cung cấp thông tin chính xác về sản phẩm, xử lý đơn hàng kịp thời và giải quyết khiếu nại của khách hàng.</p>
+
+                <h5>4. Chính sách hoàn trả và hủy đơn</h5>
+                <p>Người bán phải tuân thủ chính sách hoàn trả và hủy đơn hàng của EShop.</p>
+
+                <h5>5. Chất lượng sản phẩm</h5>
+                <p>Sản phẩm phải đảm bảo chất lượng và đúng với mô tả. Người bán chịu trách nhiệm về tính hợp pháp của sản phẩm.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đã hiểu</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

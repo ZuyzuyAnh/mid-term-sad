@@ -1,0 +1,189 @@
+<!-- templates/shipping_service/track_shipment.html -->
+{% extends 'base.html' %}
+
+{% block title %}Theo dõi đơn hàng | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Theo dõi đơn hàng</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        {% if shipment %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Thông tin vận chuyển</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <span class="fw-bold">Mã đơn hàng:</span>
+                            <span>{{ shipment.order_id }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="fw-bold">Mã vận đơn:</span>
+                            <span>{{ shipment.tracking_number }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="fw-bold">Đơn vị vận chuyển:</span>
+                            <span>{{ shipment.carrier }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <span class="fw-bold">Trạng thái:</span>
+                            <span>
+                                {% if shipment.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                {% elif shipment.status == 'processing' %}
+                                <span class="badge bg-info text-dark">Đang xử lý</span>
+                                {% elif shipment.status == 'shipped' %}
+                                <span class="badge bg-primary">Đã gửi hàng</span>
+                                {% elif shipment.status == 'in_transit' %}
+                                <span class="badge bg-primary">Đang vận chuyển</span>
+                                {% elif shipment.status == 'delivered' %}
+                                <span class="badge bg-success">Đã giao hàng</span>
+                                {% elif shipment.status == 'failed' %}
+                                <span class="badge bg-danger">Giao hàng thất bại</span>
+                                {% elif shipment.status == 'returned' %}
+                                <span class="badge bg-secondary">Đã hoàn trả</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="fw-bold">Ngày gửi:</span>
+                            <span>{{ shipment.created_at|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="fw-bold">Dự kiến giao hàng:</span>
+                            <span>{{ shipment.estimated_delivery|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Địa chỉ giao hàng</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>{{ shipment.shipping_address.recipient_name }}</strong></p>
+                <p class="mb-1">{{ shipment.shipping_address.street_address }}</p>
+                <p class="mb-1">{{ shipment.shipping_address.city }}, {{ shipment.shipping_address.state }}</p>
+                <p class="mb-1">{{ shipment.shipping_address.country }} {{ shipment.shipping_address.zip_code }}</p>
+                <p class="mb-0">Điện thoại: {{ shipment.shipping_address.phone_number }}</p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Lịch trình vận chuyển</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% for info in tracking_info %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker {% if forloop.first %}active{% endif %}"></div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between mb-1">
+                                <h6 class="fw-bold mb-0">{{ info.status }}</h6>
+                                <span class="text-muted small">{{ info.timestamp|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            <p class="mb-1">{{ info.location }}</p>
+                            {% if info.description %}
+                            <p class="text-muted small mb-0">{{ info.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if not tracking_info %}
+                <div class="text-center py-4">
+                    <p class="text-muted mb-0">Chưa có thông tin cập nhật cho đơn hàng này.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Theo dõi đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{% url 'shipping_service:track_shipment' tracking_number='placeholder' %}">
+                    <div class="mb-3">
+                        <label for="tracking_number" class="form-label">Nhập mã vận đơn để theo dõi</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Mã vận đơn" required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search me-1"></i> Tra cứu
+                            </button>
+                        </div>
+                        <div class="form-text">Mã vận đơn được cung cấp trong email xác nhận đơn hàng hoặc tin nhắn SMS.</div>
+                    </div>
+                </form>
+
+                <div class="text-center py-4">
+                    <i class="fas fa-truck-moving fa-4x text-muted mb-3"></i>
+                    <h5>Theo dõi trạng thái đơn hàng của bạn</h5>
+                    <p class="text-muted mb-0">Nhập mã vận đơn để kiểm tra tình trạng giao hàng hiện tại.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline:before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #e9ecef;
+        background-color: white;
+        left: -30px;
+        top: 0;
+    }
+
+    .timeline-marker.active {
+        border-color: var(--primary-color);
+        background-color: var(--primary-color);
+    }
+
+    .timeline-content {
+        padding-bottom: 20px;
+    }
+</style>
+{% endblock %}

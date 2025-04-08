@@ -1,0 +1,234 @@
+<!-- templates/order_service/checkout.html -->
+{% extends 'base.html' %}
+
+{% block title %}Thanh toán | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_service:view_cart' %}">Giỏ hàng</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Thanh toán</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Checkout Steps -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-0">
+                <div class="d-flex justify-content-between checkout-steps">
+                    <div class="step active flex-fill text-center p-3">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Giỏ hàng</div>
+                    </div>
+                    <div class="step active flex-fill text-center p-3">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Xác nhận đơn hàng</div>
+                    </div>
+                    <div class="step flex-fill text-center p-3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Địa chỉ & Vận chuyển</div>
+                    </div>
+                    <div class="step flex-fill text-center p-3">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Thanh toán</div>
+                    </div>
+                    <div class="step flex-fill text-center p-3">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Hoàn tất</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Review -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Xác nhận đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 60%">Sản phẩm</th>
+                                <th scope="col" class="text-center">Đơn giá</th>
+                                <th scope="col" class="text-center">Số lượng</th>
+                                <th scope="col" class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3" style="width: 60px; height: 60px;">
+                                            {% comment %}
+                                            <!-- TODO: Get product image from product_id -->
+                                            <img src="{{ item.product_image_url }}" alt="{{ item.product_name }}" class="img-fluid" style="max-height: 60px; max-width: 60px;">
+                                            {% endcomment %}
+                                            <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                                                <i class="fas fa-image fa-lg text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">{{ item.product_name }}</h6>
+                                            {% if item.selected_attributes %}
+                                            <div class="small text-muted">
+                                                {% for key, value in item.selected_attributes.items %}
+                                                <span>{{ key }}: {{ value }}</span>{% if not forloop.last %}, {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">{{ item.price_at_time|floatformat:0 }}₫</td>
+                                <td class="text-center">{{ item.quantity }}</td>
+                                <td class="text-end fw-bold">{{ item.subtotal|floatformat:0 }}₫</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Vui lòng kiểm tra kỹ thông tin đơn hàng trước khi tiếp tục.
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'order_service:view_cart' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Trở lại giỏ hàng
+                    </a>
+                    <a href="{% url 'order_service:checkout_shipping' %}" class="btn btn-primary">
+                        Tiếp tục <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Order Summary -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Tóm tắt đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tạm tính ({{ cart_items|length }} sản phẩm)</span>
+                    <span>{{ subtotal|floatformat:0 }}₫</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Phí vận chuyển</span>
+                    <span>---</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Thuế VAT (10%)</span>
+                    <span>{{ subtotal|multiply:0.1|floatformat:0 }}₫</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Giảm giá</span>
+                    <span>0₫</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-0 fw-bold">
+                    <span>Tổng cộng</span>
+                    <span>{{ subtotal|add:subtotal|multiply:0.1|floatformat:0 }}₫</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promotion Code -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Mã giảm giá</h5>
+            </div>
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Nhập mã giảm giá">
+                    <button class="btn btn-outline-primary" type="button">Áp dụng</button>
+                </div>
+                <div class="small text-muted">
+                    <i class="fas fa-info-circle me-1"></i> Mỗi đơn hàng chỉ áp dụng 1 mã giảm giá
+                </div>
+            </div>
+        </div>
+
+        <!-- Policies -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-shield-alt text-primary me-3"></i>
+                    <div>
+                        <h6 class="mb-1">Bảo mật thông tin</h6>
+                        <p class="small text-muted mb-0">Thông tin của bạn sẽ được bảo mật 100%</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-undo-alt text-primary me-3"></i>
+                    <div>
+                        <h6 class="mb-1">Chính sách đổi trả</h6>
+                        <p class="small text-muted mb-0">Đổi trả trong vòng 7 ngày nếu sản phẩm lỗi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-steps {
+        position: relative;
+    }
+
+    .checkout-steps::before {
+        content: "";
+        position: absolute;
+        top: 37px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #e9ecef;
+        z-index: 1;
+    }
+
+    .step {
+        position: relative;
+        z-index: 2;
+    }
+
+    .step-number {
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        margin: 0 auto 5px;
+        font-weight: bold;
+    }
+
+    .step-title {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .step.active .step-number {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .step.active .step-title {
+        color: var(--dark-color);
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

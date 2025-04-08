@@ -1,0 +1,262 @@
+<!-- templates/admin_service/audit_logs.html -->
+{% extends 'base.html' %}
+
+{% block title %}Nhật ký hoạt động | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin_service:dashboard' %}">Quản trị</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'admin_service:security_management' %}">Bảo mật</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Nhật ký hoạt động</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Nhật ký hoạt động</h4>
+    <a href="#" class="btn btn-outline-primary" onclick="window.print()">
+        <i class="fas fa-print me-1"></i> In nhật ký
+    </a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Tìm kiếm..." id="searchInput">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" id="userFilter">
+                    <option value="">Tất cả người dùng</option>
+                    <option value="1" {% if user_id_filter == '1' %}selected{% endif %}>Admin 1</option>
+                    <option value="2" {% if user_id_filter == '2' %}selected{% endif %}>User 2</option>
+                    <option value="3" {% if user_id_filter == '3' %}selected{% endif %}>User 3</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" id="actionFilter">
+                    <option value="">Tất cả hành động</option>
+                    <option value="login" {% if action_filter == 'login' %}selected{% endif %}>Đăng nhập</option>
+                    <option value="create" {% if action_filter == 'create' %}selected{% endif %}>Tạo mới</option>
+                    <option value="update" {% if action_filter == 'update' %}selected{% endif %}>Cập nhật</option>
+                    <option value="delete" {% if action_filter == 'delete' %}selected{% endif %}>Xóa</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" id="serviceFilter">
+                    <option value="">Tất cả dịch vụ</option>
+                    <option value="user_service" {% if service_filter == 'user_service' %}selected{% endif %}>User Service</option>
+                    <option value="order_service" {% if service_filter == 'order_service' %}selected{% endif %}>Order Service</option>
+                    <option value="product_service" {% if service_filter == 'product_service' %}selected{% endif %}>Product Service</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <div class="input-group">
+                    <input type="date" class="form-control" id="startDate" value="{{ start_date|default:'' }}">
+                    <span class="input-group-text">đến</span>
+                    <input type="date" class="form-control" id="endDate" value="{{ end_date|default:'' }}">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Thời gian</th>
+                    <th>Người dùng</th>
+                    <th>Hành động</th>
+                    <th>Dịch vụ</th>
+                    <th>Chi tiết</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in page_obj %}
+                <tr>
+                    <td>{{ log.id }}</td>
+                    <td>{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+                    <td>
+                        {% if log.user_id %}
+                        <a href="{% url 'admin_service:user_details' pk=log.user_id %}" class="text-decoration-none">
+                            User {{ log.user_id }}
+                        </a>
+                        {% else %}
+                        <span class="text-muted">System</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if log.action == 'login' %}
+                        <span class="badge bg-info">Đăng nhập</span>
+                        {% elif log.action == 'logout' %}
+                        <span class="badge bg-secondary">Đăng xuất</span>
+                        {% elif log.action == 'create' %}
+                        <span class="badge bg-success">Tạo mới</span>
+                        {% elif log.action == 'update' %}
+                        <span class="badge bg-primary">Cập nhật</span>
+                        {% elif log.action == 'delete' %}
+                        <span class="badge bg-danger">Xóa</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">{{ log.action }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ log.service_name }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#detailsModal{{ log.id }}">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+
+                        <!-- Details Modal -->
+                        <div class="modal fade" id="detailsModal{{ log.id }}" tabindex="-1" aria-labelledby="detailsModalLabel{{ log.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="detailsModalLabel{{ log.id }}">Chi tiết hoạt động #{{ log.id }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <strong>Thời gian:</strong> {{ log.timestamp|date:"d/m/Y H:i:s" }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Người dùng:</strong> {{ log.user_id|default:"System" }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Hành động:</strong> {{ log.action }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Dịch vụ:</strong> {{ log.service_name }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Địa chỉ IP:</strong> {{ log.ip_address }}
+                                        </div>
+                                        <div>
+                                            <strong>Chi tiết:</strong>
+                                            <pre class="mt-2 p-3 bg-light rounded"><code>{{ log.details|pprint }}</code></pre>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4">
+                        <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">Không tìm thấy nhật ký hoạt động nào</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if user_id_filter %}&user_id={{ user_id_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if service_filter %}&service={{ service_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if user_id_filter %}&user_id={{ user_id_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if service_filter %}&service={{ service_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if user_id_filter %}&user_id={{ user_id_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if service_filter %}&service={{ service_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if user_id_filter %}&user_id={{ user_id_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if service_filter %}&service={{ service_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if user_id_filter %}&user_id={{ user_id_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if service_filter %}&service={{ service_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const applyFilters = () => {
+            const userFilter = document.getElementById('userFilter').value;
+            const actionFilter = document.getElementById('actionFilter').value;
+            const serviceFilter = document.getElementById('serviceFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const searchQuery = document.getElementById('searchInput').value;
+
+            let url = '{% url "admin_service:audit_logs" %}?';
+            if (userFilter) url += `user_id=${userFilter}&`;
+            if (actionFilter) url += `action=${actionFilter}&`;
+            if (serviceFilter) url += `service=${serviceFilter}&`;
+            if (startDate) url += `start_date=${startDate}&`;
+            if (endDate) url += `end_date=${endDate}&`;
+            if (searchQuery) url += `q=${searchQuery}&`;
+
+            window.location.href = url;
+        };
+
+        const filters = ['userFilter', 'actionFilter', 'serviceFilter'];
+        filters.forEach(filterId => {
+            document.getElementById(filterId).addEventListener('change', applyFilters);
+        });
+
+        const dateInputs = ['startDate', 'endDate'];
+        dateInputs.forEach(inputId => {
+            document.getElementById(inputId).addEventListener('change', applyFilters);
+        });
+
+        document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
+    });
+</script>
+{% endblock %}

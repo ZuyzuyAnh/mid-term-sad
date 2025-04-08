@@ -1,0 +1,175 @@
+<!-- templates/payment_service/payment_methods.html -->
+{% extends 'base.html' %}
+
+{% block title %}Phương thức thanh toán | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'user_service:profile' %}">Tài khoản</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Phương thức thanh toán</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 mb-4">
+        <div class="account-sidebar">
+            <h5 class="mb-3">Tài khoản của tôi</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:profile' %}">
+                        <i class="fas fa-user me-2"></i> Thông tin tài khoản
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order_service:order_list' %}">
+                        <i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:address_list' %}">
+                        <i class="fas fa-map-marker-alt me-2"></i> Sổ địa chỉ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order_service:view_wishlist' %}">
+                        <i class="fas fa-heart me-2"></i> Danh sách yêu thích
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'payment_service:payment_methods' %}">
+                        <i class="fas fa-credit-card me-2"></i> Phương thức thanh toán
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Phương thức thanh toán</h5>
+                <a href="{% url 'payment_service:add_payment_method' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Thêm phương thức mới
+                </a>
+            </div>
+            <div class="card-body">
+                {% if payment_methods %}
+                <div class="row">
+                    {% for method in payment_methods %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 {% if method.is_default %}border-primary{% endif %}">
+                            <div class="card-body position-relative">
+                                {% if method.is_default %}
+                                <span class="badge bg-primary position-absolute top-0 end-0 mt-2 me-2">Mặc định</span>
+                                {% endif %}
+
+                                {% if method.payment_type == 'credit_card' or method.payment_type == 'debit_card' %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-credit-card fa-2x me-3 text-primary"></i>
+                                    <div>
+                                        <h6 class="mb-0">{{ method.get_payment_type_display }}</h6>
+                                        <p class="text-muted mb-0">{{ method.provider }}</p>
+                                    </div>
+                                </div>
+                                <div class="mb-1">
+                                    <span class="fw-bold">Số thẻ:</span>
+                                    <span>•••• •••• •••• {{ method.account_number|slice:"-4:" }}</span>
+                                </div>
+                                <div class="mb-1">
+                                    <span class="fw-bold">Chủ thẻ:</span>
+                                    <span>{{ method.account_holder }}</span>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Hết hạn:</span>
+                                    <span>{{ method.expiry_date|date:"m/Y" }}</span>
+                                </div>
+                                {% elif method.payment_type == 'bank_transfer' %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-university fa-2x me-3 text-info"></i>
+                                    <div>
+                                        <h6 class="mb-0">{{ method.get_payment_type_display }}</h6>
+                                        <p class="text-muted mb-0">{{ method.provider }}</p>
+                                    </div>
+                                </div>
+                                <div class="mb-1">
+                                    <span class="fw-bold">Số tài khoản:</span>
+                                    <span>{{ method.account_number }}</span>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Chủ tài khoản:</span>
+                                    <span>{{ method.account_holder }}</span>
+                                </div>
+                                {% elif method.payment_type == 'paypal' %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fab fa-paypal fa-2x me-3 text-primary"></i>
+                                    <div>
+                                        <h6 class="mb-0">{{ method.get_payment_type_display }}</h6>
+                                        <p class="text-muted mb-0">{{ method.account_number }}</p>
+                                    </div>
+                                </div>
+                                {% elif method.payment_type == 'momo' %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-wallet fa-2x me-3 text-danger"></i>
+                                    <div>
+                                        <h6 class="mb-0">{{ method.get_payment_type_display }}</h6>
+                                        <p class="text-muted mb-0">{{ method.account_number }}</p>
+                                    </div>
+                                </div>
+                                {% elif method.payment_type == 'zalopay' %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-wallet fa-2x me-3 text-info"></i>
+                                    <div>
+                                        <h6 class="mb-0">{{ method.get_payment_type_display }}</h6>
+                                        <p class="text-muted mb-0">{{ method.account_number }}</p>
+                                    </div>
+                                </div>
+                                {% elif method.payment_type == 'cod' %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-money-bill-wave fa-2x me-3 text-success"></i>
+                                    <div>
+                                        <h6 class="mb-0">{{ method.get_payment_type_display }}</h6>
+                                    </div>
+                                </div>
+                                <p class="text-muted">Thanh toán khi nhận hàng</p>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-white">
+                                <div class="btn-group w-100">
+                                    <a href="{% url 'payment_service:update_payment_method' pk=method.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit me-1"></i> Sửa
+                                    </a>
+                                    {% if not method.is_default %}
+                                    <a href="{% url 'payment_service:set_default_payment_method' pk=method.id %}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-check-circle me-1"></i> Đặt mặc định
+                                    </a>
+                                    <a href="{% url 'payment_service:delete_payment_method' pk=method.id %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash-alt me-1"></i> Xóa
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-credit-card fa-4x text-muted mb-3"></i>
+                    <h5>Bạn chưa có phương thức thanh toán nào</h5>
+                    <p class="text-muted mb-4">Thêm phương thức thanh toán để đặt hàng nhanh chóng hơn</p>
+                    <a href="{% url 'payment_service:add_payment_method' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i> Thêm phương thức thanh toán
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

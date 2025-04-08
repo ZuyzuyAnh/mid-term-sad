@@ -1,0 +1,217 @@
+<!-- templates/order_service/order_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Đơn hàng của tôi | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'user_service:profile' %}">Tài khoản</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Đơn hàng của tôi</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 mb-4">
+        <div class="account-sidebar">
+            <h5 class="mb-3">Tài khoản của tôi</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:profile' %}">
+                        <i class="fas fa-user me-2"></i> Thông tin tài khoản
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'order_service:order_list' %}">
+                        <i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:address_list' %}">
+                        <i class="fas fa-map-marker-alt me-2"></i> Sổ địa chỉ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order_service:view_wishlist' %}">
+                        <i class="fas fa-heart me-2"></i> Danh sách yêu thích
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'payment_service:payment_methods' %}">
+                        <i class="fas fa-credit-card me-2"></i> Phương thức thanh toán
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <ul class="nav nav-tabs card-header-tabs" id="orderTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {% if not status_filter %}active{% endif %}" href="{% url 'order_service:order_list' %}">
+                            Tất cả đơn hàng
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {% if status_filter == 'pending' %}active{% endif %}" href="{% url 'order_service:order_list' %}?status=pending">
+                            Chờ xử lý
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {% if status_filter == 'processing' %}active{% endif %}" href="{% url 'order_service:order_list' %}?status=processing">
+                            Đang xử lý
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {% if status_filter == 'shipped' %}active{% endif %}" href="{% url 'order_service:order_list' %}?status=shipped">
+                            Đang giao
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {% if status_filter == 'delivered' %}active{% endif %}" href="{% url 'order_service:order_list' %}?status=delivered">
+                            Đã giao
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {% if status_filter == 'cancelled' %}active{% endif %}" href="{% url 'order_service:order_list' %}?status=cancelled">
+                            Đã hủy
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn hàng</th>
+                                <th>Ngày đặt</th>
+                                <th>Sản phẩm</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in page_obj %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'order_service:order_detail' pk=order.id %}" class="fw-bold text-decoration-none">
+                                        #{{ order.order_number }}
+                                    </a>
+                                </td>
+                                <td>{{ order.created_at|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="badge bg-primary rounded-pill">{{ order.items.count }} sản phẩm</span>
+                                </td>
+                                <td class="fw-bold">{{ order.total_amount|floatformat:0 }}₫</td>
+                                <td>
+                                    {% if order.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                    {% elif order.status == 'processing' %}
+                                    <span class="badge bg-info text-dark">Đang xử lý</span>
+                                    {% elif order.status == 'shipped' %}
+                                    <span class="badge bg-primary">Đang giao</span>
+                                    {% elif order.status == 'delivered' %}
+                                    <span class="badge bg-success">Đã giao</span>
+                                    {% elif order.status == 'cancelled' %}
+                                    <span class="badge bg-danger">Đã hủy</span>
+                                    {% elif order.status == 'refunded' %}
+                                    <span class="badge bg-secondary">Đã hoàn tiền</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'order_service:order_detail' pk=order.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if order.status == 'pending' or order.status == 'processing' %}
+                                    <a href="{% url 'order_service:cancel_order' pk=order.id %}" class="btn btn-sm btn-outline-danger ms-1">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                        </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-shopping-bag fa-4x text-muted mb-3"></i>
+                    <h5>Bạn chưa có đơn hàng nào</h5>
+                    <p class="text-muted mb-4">Hãy khám phá các sản phẩm tuyệt vời của chúng tôi và đặt hàng ngay!</p>
+                    <a href="{% url 'product_service:product_list' %}" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart me-1"></i> Mua sắm ngay
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

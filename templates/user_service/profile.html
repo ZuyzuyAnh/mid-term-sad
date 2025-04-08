@@ -1,0 +1,138 @@
+<!-- templates/user_service/profile.html -->
+{% extends 'base.html' %}
+
+{% block title %}Tài khoản của tôi | EShop{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Tài khoản</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 mb-4">
+        <div class="account-sidebar">
+            <h5 class="mb-3">Tài khoản của tôi</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'user_service:profile' %}">
+                        <i class="fas fa-user me-2"></i> Thông tin tài khoản
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order_service:order_list' %}">
+                        <i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:address_list' %}">
+                        <i class="fas fa-map-marker-alt me-2"></i> Sổ địa chỉ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order_service:view_wishlist' %}">
+                        <i class="fas fa-heart me-2"></i> Danh sách yêu thích
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'payment_service:payment_methods' %}">
+                        <i class="fas fa-credit-card me-2"></i> Phương thức thanh toán
+                    </a>
+                </li>
+                {% if user.profile.is_vendor %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:vendor_profile' %}">
+                        <i class="fas fa-store me-2"></i> Cửa hàng của tôi
+                    </a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_service:vendor_register' %}">
+                        <i class="fas fa-store me-2"></i> Đăng ký bán hàng
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Thông tin tài khoản</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-4">
+                        {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" alt="{{ profile.full_name }}" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 150px; height: 150px;">
+                            <i class="fas fa-user fa-4x text-white"></i>
+                        </div>
+                        {% endif %}
+                        <a href="{% url 'user_service:update_profile' %}" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="fas fa-pencil-alt me-1"></i> Cập nhật
+                        </a>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Họ và tên:</div>
+                            <div class="col-md-9">{{ profile.full_name }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Email:</div>
+                            <div class="col-md-9">{{ user.email }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Tên đăng nhập:</div>
+                            <div class="col-md-9">{{ user.username }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Số điện thoại:</div>
+                            <div class="col-md-9">{{ profile.phone_number|default:"Chưa cập nhật" }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Ngày sinh:</div>
+                            <div class="col-md-9">{{ profile.birth_date|default:"Chưa cập nhật" }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Điểm tích lũy:</div>
+                            <div class="col-md-9">{{ profile.loyalty_points }} điểm</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Ngày tham gia:</div>
+                            <div class="col-md-9">{{ user.date_joined|date:"d/m/Y" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if default_address %}
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Địa chỉ mặc định</h5>
+                <a href="{% url 'user_service:address_list' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-list me-1"></i> Tất cả địa chỉ
+                </a>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>{{ default_address.address_type|title }}:</strong> {{ default_address.street_address }}</p>
+                <p class="mb-1">{{ default_address.city }}, {{ default_address.state }}, {{ default_address.country }}</p>
+                <p class="mb-1">{{ default_address.zip_code }}</p>
+                {% if default_address.phone_number %}
+                <p class="mb-0"><strong>Điện thoại:</strong> {{ default_address.phone_number }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
